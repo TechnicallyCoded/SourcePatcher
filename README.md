@@ -31,4 +31,6 @@ You can now edit your first commit (likely decompiled source) and apply changes 
 It is recommended to pair this script with an initializing script which can create a base project and decompile a binary for the user. This is not provided in this project. 
 
 ## Contributing
-Contributions are welcome! Feel free to PR changes. However, if you are introducing new features, please open an issue first to discuss its implementation. This will avoid wasting your time. As is obvious, we cannot merge changes into `main` without signing the `source_patcher.py` file. This will require that I commit changes to your PR before merging.
+Contributions are welcome! Feel free to PR changes. 
+- However, if you are introducing new features, please open an issue first to discuss its implementation. This will avoid wasting your time.
+- As is obvious, we cannot merge changes into `main` without signing the `source_patcher.py` file. This will require that I commit changes to your PR before merging.

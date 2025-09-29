@@ -31,7 +31,7 @@ MCowBQYDK2VwAyEA6o1rbi7P0JXgiJwk71bVR4tddPmsPhqwBtdYrEWwc2Q=
 -----END PUBLIC KEY-----
 """
 
-DEFAULT_URL = "https://raw.githubusercontent.com/user/repo/commit/path/to/remote_script.py"
+DEFAULT_URL = "https://raw.githubusercontent.com/TechnicallyCoded/SourcePatcher/refs/heads/main/source_patcher.py"
 
 
 # -------- helpers --------

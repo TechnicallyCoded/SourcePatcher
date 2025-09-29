@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# secure_run_remote_ed25519_hash.py
+# loader.py
 #
 # Commands:
 #   remote <url> [args...]              # verify + run from URL, pass args to target

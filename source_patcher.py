@@ -1,8 +1,8 @@
 # HEADER
 # HASH
-# 72084b2d1abe995cac35df0322b55b1739bd46e085415f46b71157214f78d1a488ff416a1ef5a5d5ff95ad78baec9e0943e9d84042503d58c5d54926db1b7668
+# 1d0515fa92c613f3de38ed9071613d1b27df1f6663079d3a6a045e3dc139621d7dc1c60fc8f96e51a651d2c5b32cca74850dc80bdbf32eb4cdd1dd56148e7dfc
 # SIGNATURE
-# RC+luDsTEu9+2d4W2O/BB57UV5dnvUjI5uZ1GXcOvh3XrkhvVkKi8sX2Kv6LfzpVvc2MZXl/uI++0O503iUgAg==
+# qS1WpP7rr7y+k08FR2B2pZY6GOZV7vriy827AlvL9ZAU01yqkQGW89nFxppxY5OM4FBocSk1zgfGF9UXn8MdAg==
 # END
 # ---
 
@@ -16,7 +16,7 @@ Patch filenames must begin with an integer ID followed by a dash, e.g.:
 
 Commands:
   - patch [ID ...] : apply all patches in numeric order, or only the specified IDs.
-  - rebuild [HASH] : regenerate patch files from git history up to highest existing ID,
+  - rebuild [HASH] : regenerate all numbered patch files from git history,
                      or only for the given commit HASH (placing it at its historical ID).
   - reset          : hard-reset the repo to the root commit and clear ./patches.
 
@@ -24,10 +24,10 @@ Notes:
   - Applying uses a 3-way merge with relaxed matching and no base-commit checks.
     It still stops on true conflicts. On failure, the repo is rolled back to the
     pre-apply state. Patch files remain for manual fix + amend; rerun rebuild will
-    only touch IDs up to the cutoff or the specific ID requested.
+    regenerate all numbered patches or the specific ID requested.
 """
 
-VERSION = "0.4.0"
+VERSION = "0.4.1"
 
 import re
 import sys
@@ -118,20 +118,6 @@ def find_patches(pdir: Path) -> List[Path]:
     return [p for _, __, p in items]
 
 
-def highest_patch_id(patches: List[Path]) -> int:
-    max_id = 0
-    for p in patches:
-        m = ID_RE.match(p.name)
-        if m:
-            try:
-                pid = int(m.group(1))
-                if pid > max_id:
-                    max_id = pid
-            except ValueError:
-                continue
-    return max_id
-
-
 def sanitize_subject_to_slug(subject: str) -> str:
     s = unicodedata.normalize("NFKD", subject).encode("ascii", "ignore").decode("ascii")
     s = re.sub(r"[^A-Za-z0-9]+", "-", s)
@@ -164,6 +150,16 @@ def write_patch_for_commit(repo: Path, pdir: Path, sha: str, patch_id: int) -> s
     fname = f"{patch_id:04d}-{slug}.patch"
     (pdir / fname).write_text(cp_patch.stdout, encoding="utf-8")
     return fname
+
+
+def clear_numbered_patch_files(pdir: Path) -> None:
+    if not pdir.exists():
+        return
+    for p in pdir.iterdir():
+        if not p.is_file():
+            continue
+        if ID_RE.match(p.name):
+            p.unlink(missing_ok=True)
 
 
 def apply_patches(repo: Path, patches: List[Path]):
@@ -203,31 +199,17 @@ def rebuild_patches(repo: Path, pdir: Path):
     root = get_root_commit(repo)
     commits = rev_list_from(repo, root)
 
-    existing = find_patches(pdir) if pdir.exists() else []
-    cutoff = highest_patch_id(existing)
-    if cutoff == 0:
-        cutoff = len(commits)
-
-    if cutoff == 0:
+    if not commits:
         print("no commits after root. nothing to rebuild.")
         return
-
-    if cutoff > len(commits):
-        cutoff = len(commits)
 
     if not pdir.exists():
         pdir.mkdir(parents=True)
     else:
-        # Remove only IDs <= cutoff
-        for p in existing:
-            m = ID_RE.match(p.name)
-            if not m:
-                continue
-            if int(m.group(1)) <= cutoff:
-                p.unlink(missing_ok=True)
+        clear_numbered_patch_files(pdir)
 
-    print(f"rebuilding patches 1..{cutoff}")
-    for idx, sha in enumerate(commits[:cutoff], start=1):
+    print(f"rebuilding patches 1..{len(commits)}")
+    for idx, sha in enumerate(commits, start=1):
         fname = write_patch_for_commit(repo, pdir, sha, idx)
         print(f"  wrote {fname}")
     print("rebuild complete.")

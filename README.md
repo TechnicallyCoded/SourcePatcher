@@ -14,6 +14,7 @@ Very simple:
 - Run `loader.py exec rebuild`
 - First commit will be ignored (this can be used to avoid uploading sources to your repo due to copyright)
 - You will now have a folder named "patches"
+- Running `rebuild` regenerates all numbered patches from the current git history. New commits are added as new patch files.
 
 ### Editing the Base
 You will likely want to edit your decompiled source at some point.  
